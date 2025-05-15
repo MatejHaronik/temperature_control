@@ -90,7 +90,7 @@ void Init_MAX31865(MAX31865_t *max31865){
 							(FILTER_TYPE);
 
 	Write_register(max31865,&cfg_reg,&config_byte);
-	HAL_Delay(200);
+	HAL_Delay(10);
 	reg = Read_register(max31865,&cfg_reg);
 
 }
@@ -99,7 +99,7 @@ void Clear_fault(MAX31865_t *max31865){
 
 	HAL_GPIO_WritePin(max31865->cs_gpio_port, max31865->cs_pin, GPIO_PIN_SET);
 	uint16_t reg = 0;
-	HAL_Delay(1000);
+	HAL_Delay(10);
 	uint8_t config_byte = 	(VBIAS_ON << 7) |				/*D7 - MSB*/
             				(CONVERSION_MODE << 6) |		/*D6*/
 							(ONE_SHOT << 5) |				/*D5*/
@@ -110,7 +110,7 @@ void Clear_fault(MAX31865_t *max31865){
 							(FILTER_TYPE);
 
 	Write_register(max31865,&cfg_reg,&config_byte);
-	HAL_Delay(200);
+	HAL_Delay(10);
 	reg = Read_register(max31865,&cfg_reg);
 
 }
@@ -124,7 +124,7 @@ float Read_temperature(MAX31865_t *max31865){
 
 
 	Clear_fault(max31865);
-	HAL_Delay(200);
+	HAL_Delay(10);
 
 	uint16_t adc_rtd_data = 0 ;
 	float r_ref = 428.0f ;

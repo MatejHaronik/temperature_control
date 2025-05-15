@@ -52,31 +52,23 @@ UART_HandleTypeDef huart2;
 MAX31865_t SENSOR1;
 
 float temp_data = 0;
+
+uint32_t temp_int;
 uint16_t temp_data_hi = 0;
 uint16_t temp_data_low = 0;
 
-uint8_t *float_bytes;
 
-uint8_t data[4];
 
 extern ring_buffer rx_buffer;
-extern ring_buffer tx_buffer;
 
 extern uint8_t modbus_message_flag;
 
 uint8_t uartRxBuffer[64];
 
-uint8_t txData[] = "HELLO";
 
 
 extern uint16_t holding_register_map[NUM_HOLDING_REGISTERS];
 
-
-
-/*extern uint16_t ModbusRegister[NUMBER_OF_REGISTER];*/
-/*extern bool ModbusCoil[NUMBER_OF_COIL];*/
-
-uint8_t rx_buff[10];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -93,7 +85,7 @@ static void MX_TIM3_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-char buffer[5];
+
 /* USER CODE END 0 */
 
 /**
@@ -104,8 +96,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-	holding_register_map[0] = 0xcc;
-	holding_register_map[1] = 0xbb;
+
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -147,18 +138,24 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  //HAL_Delay(1000);
-	  /*temp_data = Read_temperature(&SENSOR1);*/
-	  /*temp_data_hi  = ((uint16_t)float_bytes[0] << 8) | float_bytes[1]; */ // High word
-	  /*temp_data_low = ((uint16_t)float_bytes[2] << 8) | float_bytes[3];*/
-
-	  /*holding_register_map[0] = temp_data_hi;*/
-	  /*holding_register_map[1] = temp_data_low;*/
-
 	  if (modbus_message_flag) {
 		  Modbus_recieve_message_handle(&rx_buffer,8);
 		  modbus_message_flag = 0 ;
 	}
+
+
+	temp_data = Read_temperature(&SENSOR1);
+	memcpy(&temp_int, &temp_data, sizeof(temp_data));
+	temp_data_low = temp_int & 0xFFFF;
+	temp_data_hi  = (temp_int >> 16) & 0xFFFF;  // High word
+
+
+	holding_register_map[0] = temp_data_hi;
+	holding_register_map[1] = temp_data_low;
+
+
+
+
 
     /* USER CODE END WHILE */
 
