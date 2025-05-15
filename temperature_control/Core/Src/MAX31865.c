@@ -105,7 +105,7 @@ void Clear_fault(MAX31865_t *max31865){
 							(ONE_SHOT << 5) |				/*D5*/
 							(THREE_WIRE << 4) |				/*D4*/
 							(FAULT_DETECT_1 << 3) |			/*D3*/
-							(FAULT_DETECT_0 << 2) |			/*D2*/
+							(FAULT_DETECT_1 << 2) |			/*D2*/
 							(CLEAR_FAULT << 1) |			/*D1*/
 							(FILTER_TYPE);
 
@@ -126,27 +126,20 @@ float Read_temperature(MAX31865_t *max31865){
 	Clear_fault(max31865);
 	HAL_Delay(200);
 
-	uint16_t raw_rtd_data = 0 ;
+	uint16_t adc_rtd_data = 0 ;
+	float r_ref = 428.0f ;
+	float r_t = 100.0f;
+	float rtd = 0 ;
+	const float a = 0.00390830f;
+	const float b = -0.0000005775f;
 
-	const float R0 = 100.0f; // PT100
-	const float R_REF = 109.8f;
-    const float a = 3.9083e-3f;
-    const float b = -5.775e-7f;
+	adc_rtd_data = Read_register(max31865, &rtd_reg) >> 1;
 
-	raw_rtd_data = Read_register(max31865, &rtd_reg) >> 1;
+	rtd = (adc_rtd_data * r_ref) / (1<<15);
 
-	float resistance_rtd = ((float)raw_rtd_data / 32768.0f) * R_REF;
+	float temperature = (-a + (sqrt((a*a)-(4*b)*(1-(rtd / r_t))))) / (2*b);
 
-	float discriminant = (a * a) - (4 * b * (1 - (resistance_rtd / R0)));
-
-
-    if (discriminant >= 0.0f) {
-        float temperature = (-a + sqrt(discriminant)) / (2 * b);
-        return temperature;
-    } else {
-        // Error: resistance not valid for temperature range
-        return -999.0f;
-    }
+	return temperature;
 
 }
 

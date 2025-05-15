@@ -32,6 +32,7 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "MAX31865.h"
+#include "modbus_rtu.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

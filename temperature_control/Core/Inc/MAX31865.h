@@ -15,9 +15,9 @@
 #define CONVERSION_MODE						1	/*1 - AUTO; 0 - Normally OFF*/
 #define ONE_SHOT							0	/*1 - 1-shot*/
 #define THREE_WIRE							1	/*1- 3-wire RTD ; 0 - 2 or 4 wire RTD*/
-#define FAULT_DETECT_AUTO					0	/*Combination of bits 0 1 to set this auto*/
+#define FAULT_DETECT_AUTO					1	/*Combination of bits 0 1 to set this auto*/
 #define FAULT_CLEAR							0	/*Write a 1 to this bit while writing 0 to bits D5, D3, and D2 to return all fault status bits (D[7:2])*/
-#define FILTER_TYPE							0	/*1-50Hz; 0-60Hz*/
+#define FILTER_TYPE							1	/*1-50Hz; 0-60Hz*/
 
 #if FAULT_DETECT_AUTO
 	#define	FAULT_DETECT_1		0
