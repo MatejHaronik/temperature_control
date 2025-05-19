@@ -154,6 +154,7 @@ void Modbus_recieve_message_handle(ring_buffer *ring_buffer, uint16_t length) {
 
     if (length < 5) {
         printf("Frame too short.\n");
+
         return;
     }
 
@@ -163,6 +164,7 @@ void Modbus_recieve_message_handle(ring_buffer *ring_buffer, uint16_t length) {
 
     if (crc_calc != crc_recv) {
         printf("CRC mismatch! Calculated: 0x%04X, Received: 0x%04X\n", crc_calc, crc_recv);
+
         return;
     }
 

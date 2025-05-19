@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "cmsis_os.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -43,11 +44,23 @@
 /* Private variables ---------------------------------------------------------*/
 SPI_HandleTypeDef hspi1;
 
-TIM_HandleTypeDef htim3;
-
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 
+/* Definitions for Modbus_task */
+osThreadId_t Modbus_taskHandle;
+const osThreadAttr_t Modbus_task_attributes = {
+  .name = "Modbus_task",
+  .priority = (osPriority_t) osPriorityAboveNormal,
+  .stack_size = 128 * 4
+};
+/* Definitions for Temperature_tas */
+osThreadId_t Temperature_tasHandle;
+const osThreadAttr_t Temperature_tas_attributes = {
+  .name = "Temperature_tas",
+  .priority = (osPriority_t) osPriorityLow,
+  .stack_size = 128 * 4
+};
 /* USER CODE BEGIN PV */
 MAX31865_t SENSOR1;
 
@@ -77,7 +90,9 @@ static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_USART1_UART_Init(void);
-static void MX_TIM3_Init(void);
+void Modbus_task_handle(void *argument);
+void Temperature_task_handle(void *argument);
+
 /* USER CODE BEGIN PFP */
 
 
@@ -120,9 +135,8 @@ int main(void)
   MX_USART2_UART_Init();
   MX_SPI1_Init();
   MX_USART1_UART_Init();
-  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
-  Ringbuf_init();
+
 
                                                                                                                                                                                                                                                                                                                                                                     SENSOR1.cs_gpio_port = GPIOA;
   SENSOR1.cs_pin = GPIO_PIN_4;
@@ -132,26 +146,56 @@ int main(void)
 
   Init_MAX31865(&SENSOR1);
 
+  Ringbuf_init();
   /* USER CODE END 2 */
+
+  /* Init scheduler */
+  osKernelInitialize();
+
+  /* USER CODE BEGIN RTOS_MUTEX */
+  /* add mutexes, ... */
+  /* USER CODE END RTOS_MUTEX */
+
+  /* USER CODE BEGIN RTOS_SEMAPHORES */
+  /* add semaphores, ... */
+  /* USER CODE END RTOS_SEMAPHORES */
+
+  /* USER CODE BEGIN RTOS_TIMERS */
+  /* start timers, add new ones, ... */
+  /* USER CODE END RTOS_TIMERS */
+
+  /* USER CODE BEGIN RTOS_QUEUES */
+  /* add queues, ... */
+  /* USER CODE END RTOS_QUEUES */
+
+  /* Create the thread(s) */
+  /* creation of Modbus_task */
+  Modbus_taskHandle = osThreadNew(Modbus_task_handle, NULL, &Modbus_task_attributes);
+
+  /* creation of Temperature_tas */
+  Temperature_tasHandle = osThreadNew(Temperature_task_handle, NULL, &Temperature_tas_attributes);
+
+  /* USER CODE BEGIN RTOS_THREADS */
+  /* add threads, ... */
+  /* USER CODE END RTOS_THREADS */
+
+  /* USER CODE BEGIN RTOS_EVENTS */
+  /* add events, ... */
+  /* USER CODE END RTOS_EVENTS */
+
+  /* Start scheduler */
+  osKernelStart();
+
+  /* We should never get here as control is now taken by the scheduler */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  if (modbus_message_flag) {
-		  Modbus_recieve_message_handle(&rx_buffer,8);
-		  modbus_message_flag = 0 ;
-	}
 
 
-	temp_data = Read_temperature(&SENSOR1);
-	memcpy(&temp_int, &temp_data, sizeof(temp_data));
-	temp_data_low = temp_int & 0xFFFF;
-	temp_data_hi  = (temp_int >> 16) & 0xFFFF;  // High word
 
 
-	holding_register_map[0] = temp_data_hi;
-	holding_register_map[1] = temp_data_low;
 
 
 
@@ -186,7 +230,13 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSIDiv = RCC_HSI_DIV1;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+  RCC_OscInitStruct.PLL.PLLM = RCC_PLLM_DIV1;
+  RCC_OscInitStruct.PLL.PLLN = 8;
+  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+  RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
+  RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -196,11 +246,11 @@ void SystemClock_Config(void)
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
   {
     Error_Handler();
   }
@@ -243,58 +293,6 @@ static void MX_SPI1_Init(void)
   /* USER CODE BEGIN SPI1_Init 2 */
 
   /* USER CODE END SPI1_Init 2 */
-
-}
-
-/**
-  * @brief TIM3 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_TIM3_Init(void)
-{
-
-  /* USER CODE BEGIN TIM3_Init 0 */
-
-  /* USER CODE END TIM3_Init 0 */
-
-  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
-  TIM_SlaveConfigTypeDef sSlaveConfig = {0};
-  TIM_MasterConfigTypeDef sMasterConfig = {0};
-
-  /* USER CODE BEGIN TIM3_Init 1 */
-
-  /* USER CODE END TIM3_Init 1 */
-  htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 16-1;
-  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 304;
-  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-  if (HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sSlaveConfig.SlaveMode = TIM_SLAVEMODE_DISABLE;
-  sSlaveConfig.InputTrigger = TIM_TS_ITR2;
-  if (HAL_TIM_SlaveConfigSynchro(&htim3, &sSlaveConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN TIM3_Init 2 */
-
-  /* USER CODE END TIM3_Init 2 */
 
 }
 
@@ -432,6 +430,75 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 
 /* USER CODE END 4 */
+
+/* USER CODE BEGIN Header_Modbus_task_handle */
+/**
+  * @brief  Function implementing the Modbus_task thread.
+  * @param  argument: Not used
+  * @retval None
+  */
+/* USER CODE END Header_Modbus_task_handle */
+void Modbus_task_handle(void *argument)
+{
+  /* USER CODE BEGIN 5 */
+  /* Infinite loop */
+  for(;;)
+  {
+
+	  Modbus_recieve_message_handle(&rx_buffer,8);
+
+    osDelay(1);
+  }
+  osThreadTerminate(NULL);
+  /* USER CODE END 5 */
+}
+
+/* USER CODE BEGIN Header_Temperature_task_handle */
+/**
+* @brief Function implementing the Temperature_tas thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_Temperature_task_handle */
+void Temperature_task_handle(void *argument)
+{
+  /* USER CODE BEGIN Temperature_task_handle */
+  /* Infinite loop */
+  for(;;)
+  {
+	temp_data = Read_temperature(&SENSOR1);
+	memcpy(&temp_int, &temp_data, sizeof(temp_data));
+	temp_data_low = temp_int & 0xFFFF;
+	temp_data_hi  = (temp_int >> 16) & 0xFFFF;  // High word
+
+
+	holding_register_map[0] = temp_data_hi;
+	holding_register_map[1] = temp_data_low;
+    osDelay(1);
+  }
+  /* USER CODE END Temperature_task_handle */
+}
+
+/**
+  * @brief  Period elapsed callback in non blocking mode
+  * @note   This function is called  when TIM3 interrupt took place, inside
+  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
+  * a global variable "uwTick" used as application time base.
+  * @param  htim : TIM handle
+  * @retval None
+  */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  /* USER CODE BEGIN Callback 0 */
+
+  /* USER CODE END Callback 0 */
+  if (htim->Instance == TIM3) {
+    HAL_IncTick();
+  }
+  /* USER CODE BEGIN Callback 1 */
+
+  /* USER CODE END Callback 1 */
+}
 
 /**
   * @brief  This function is executed in case of error occurrence.

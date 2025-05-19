@@ -20,8 +20,6 @@ extern UART_HandleTypeDef huart1;
 #define TIMEOUT_DEF 500  // 500ms timeout
 uint16_t timeout;
 
-extern TIM_HandleTypeDef htim3;
-
 uint32_t timmer3_flag = 0;
 uint8_t modbus_message_flag = 0 ;
 
@@ -44,16 +42,6 @@ ring_buffer *_tx_buffer;
 
 void store_char(unsigned char c, ring_buffer *buffer);
 
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-    if(htim->Instance == TIM3)
-    {
-
-        HAL_TIM_Base_Stop_IT(&htim3);
-        timmer3_flag = 0 ;
-        modbus_message_flag = 1 ;
-    }
-}
 
 void Ringbuf_init(void)
 {
@@ -79,12 +67,6 @@ void store_char(unsigned char c, ring_buffer *buffer)
     buffer->buffer[buffer->head] = c;
     buffer->head = i;
   }
-
-  if (timmer3_flag == 0) {
-  	HAL_TIM_Base_Start_IT(&htim3);
-  	timmer3_flag ++;
-  }
-  __HAL_TIM_SET_COUNTER(&htim3, 0);
 
 }
 
