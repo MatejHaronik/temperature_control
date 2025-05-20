@@ -445,7 +445,7 @@ void Modbus_task_handle(void *argument)
   for(;;)
   {
 
-	  Modbus_recieve_message_handle(&rx_buffer,8);
+	  //Modbus_recieve_message_handle(&rx_buffer,8);
 
     osDelay(1);
   }
