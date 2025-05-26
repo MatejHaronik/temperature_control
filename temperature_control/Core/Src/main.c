@@ -22,7 +22,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "uart_ring_buffer.h"
+#include "Modbus.h"
 #include <string.h>
 /* USER CODE END Includes */
 
@@ -71,16 +71,11 @@ uint16_t temp_data_hi = 0;
 uint16_t temp_data_low = 0;
 
 
-
-extern ring_buffer rx_buffer;
-
-extern uint8_t modbus_message_flag;
-
-uint8_t uartRxBuffer[64];
+modbusHandler_t ModbusH;
+uint16_t ModbusDATA[8];
 
 
 
-extern uint16_t holding_register_map[NUM_HOLDING_REGISTERS];
 
 /* USER CODE END PV */
 
@@ -146,7 +141,23 @@ int main(void)
 
   Init_MAX31865(&SENSOR1);
 
-  Ringbuf_init();
+  //Modbus Slave initialization
+
+  ModbusH.uModbusType = MB_SLAVE;
+  ModbusH.port =  &huart1;
+  ModbusH.u8id = 1; // For master it must be 0
+  ModbusH.u16timeOut = 1000;
+  ModbusH.EN_Port = NULL;
+  ModbusH.EN_Port = NULL;
+  ModbusH.EN_Pin = 0;
+  ModbusH.u16regs = ModbusDATA;
+  ModbusH.u16regsize= sizeof(ModbusDATA)/sizeof(ModbusDATA[0]);
+  ModbusH.xTypeHW = USART_HW;
+
+  //Initialize Modbus library
+  ModbusInit(&ModbusH);
+  //Start capturing traffic on serial Port
+  ModbusStart(&ModbusH);
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -468,12 +479,9 @@ void Temperature_task_handle(void *argument)
   {
 	temp_data = Read_temperature(&SENSOR1);
 	memcpy(&temp_int, &temp_data, sizeof(temp_data));
-	temp_data_low = temp_int & 0xFFFF;
-	temp_data_hi  = (temp_int >> 16) & 0xFFFF;  // High word
+	ModbusDATA[0] = temp_int & 0xFFFF;
+	ModbusDATA[1]  = (temp_int >> 16) & 0xFFFF;  // High word
 
-
-	holding_register_map[0] = temp_data_hi;
-	holding_register_map[1] = temp_data_low;
     osDelay(1);
   }
   /* USER CODE END Temperature_task_handle */
