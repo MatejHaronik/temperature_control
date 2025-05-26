@@ -1,0 +1,127 @@
+(kicad_sch
+	(version 20231120)
+	(generator "eeschema")
+	(generator_version "8.0")
+	(uuid "e02f80f6-ce77-450b-a25c-ebd7c867a183")
+	(paper "A4")
+	(lib_symbols)
+	(sheet
+		(at 20.32 20.32)
+		(size 30.48 27.94)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "45b5e4f1-6ba7-4d16-aea1-e40d94abf55a")
+		(property "Sheetname" "MCU-IO"
+			(at 20.32 19.6084 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "MCU-IO.kicad_sch"
+			(at 20.32 48.8446 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "Temperature_controler"
+				(path "/e02f80f6-ce77-450b-a25c-ebd7c867a183"
+					(page "2")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 59.69 20.32)
+		(size 36.83 27.94)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "a5ccd836-a16b-40b5-9df1-6c0de1bde4a8")
+		(property "Sheetname" "Temperature_block"
+			(at 59.69 19.6084 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "Temperature_block.kicad_sch"
+			(at 59.69 48.8446 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "Temperature_controler"
+				(path "/e02f80f6-ce77-450b-a25c-ebd7c867a183"
+					(page "3")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 102.87 20.32)
+		(size 36.83 27.94)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "e09705c4-e719-46d0-bbfe-d5fbaa444ec8")
+		(property "Sheetname" "Modbus_block"
+			(at 102.87 19.6084 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "Modbus_block.kicad_sch"
+			(at 102.87 48.8446 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "Temperature_controler"
+				(path "/e02f80f6-ce77-450b-a25c-ebd7c867a183"
+					(page "4")
+				)
+			)
+		)
+	)
+	(sheet_instances
+		(path "/"
+			(page "1")
+		)
+	)
+)
