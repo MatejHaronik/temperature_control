@@ -82,6 +82,44 @@
 		)
 	)
 	(sheet
+		(at 20.32 55.88)
+		(size 30.48 22.86)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "ad2b6a96-9804-4451-8b5e-f62dfad2db8e")
+		(property "Sheetname" "Power_supply_block"
+			(at 20.32 55.1684 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "Power_supply_block.kicad_sch"
+			(at 20.32 79.3246 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "Temperature_controler"
+				(path "/e02f80f6-ce77-450b-a25c-ebd7c867a183"
+					(page "5")
+				)
+			)
+		)
+	)
+	(sheet
 		(at 102.87 20.32)
 		(size 36.83 27.94)
 		(fields_autoplaced yes)
