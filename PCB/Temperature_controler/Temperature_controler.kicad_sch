@@ -6,7 +6,7 @@
 	(paper "A4")
 	(lib_symbols)
 	(sheet
-		(at 20.32 20.32)
+		(at 77.47 60.96)
 		(size 30.48 27.94)
 		(fields_autoplaced yes)
 		(stroke
@@ -18,7 +18,7 @@
 		)
 		(uuid "45b5e4f1-6ba7-4d16-aea1-e40d94abf55a")
 		(property "Sheetname" "MCU-IO"
-			(at 20.32 19.6084 0)
+			(at 77.47 60.2484 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -27,7 +27,7 @@
 			)
 		)
 		(property "Sheetfile" "MCU-IO.kicad_sch"
-			(at 20.32 48.8446 0)
+			(at 77.47 89.4846 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -44,8 +44,8 @@
 		)
 	)
 	(sheet
-		(at 59.69 20.32)
-		(size 36.83 27.94)
+		(at 77.47 96.52)
+		(size 30.48 25.4)
 		(fields_autoplaced yes)
 		(stroke
 			(width 0.1524)
@@ -56,7 +56,7 @@
 		)
 		(uuid "a5ccd836-a16b-40b5-9df1-6c0de1bde4a8")
 		(property "Sheetname" "Temperature_block"
-			(at 59.69 19.6084 0)
+			(at 77.47 95.8084 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -65,7 +65,7 @@
 			)
 		)
 		(property "Sheetfile" "Temperature_block.kicad_sch"
-			(at 59.69 48.8446 0)
+			(at 77.47 122.5046 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -82,8 +82,8 @@
 		)
 	)
 	(sheet
-		(at 20.32 55.88)
-		(size 30.48 22.86)
+		(at 113.03 60.96)
+		(size 29.21 27.94)
 		(fields_autoplaced yes)
 		(stroke
 			(width 0.1524)
@@ -94,7 +94,7 @@
 		)
 		(uuid "ad2b6a96-9804-4451-8b5e-f62dfad2db8e")
 		(property "Sheetname" "Power_supply_block"
-			(at 20.32 55.1684 0)
+			(at 113.03 60.2484 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -103,7 +103,7 @@
 			)
 		)
 		(property "Sheetfile" "Power_supply_block.kicad_sch"
-			(at 20.32 79.3246 0)
+			(at 113.03 89.4846 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -120,8 +120,8 @@
 		)
 	)
 	(sheet
-		(at 102.87 20.32)
-		(size 36.83 27.94)
+		(at 114.3 96.52)
+		(size 27.94 25.4)
 		(fields_autoplaced yes)
 		(stroke
 			(width 0.1524)
@@ -132,7 +132,7 @@
 		)
 		(uuid "e09705c4-e719-46d0-bbfe-d5fbaa444ec8")
 		(property "Sheetname" "Modbus_block"
-			(at 102.87 19.6084 0)
+			(at 114.3 95.8084 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -141,7 +141,7 @@
 			)
 		)
 		(property "Sheetfile" "Modbus_block.kicad_sch"
-			(at 102.87 48.8446 0)
+			(at 114.3 122.5046 0)
 			(effects
 				(font
 					(size 1.27 1.27)
