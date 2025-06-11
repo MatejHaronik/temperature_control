@@ -2254,7 +2254,7 @@
 	)
 	(wire
 		(pts
-			(xy 138.43 194.31) (xy 138.43 186.69)
+			(xy 138.43 198.12) (xy 138.43 186.69)
 		)
 		(stroke
 			(width 0)
@@ -2684,7 +2684,7 @@
 	)
 	(wire
 		(pts
-			(xy 138.43 201.93) (xy 138.43 218.44)
+			(xy 138.43 205.74) (xy 138.43 218.44)
 		)
 		(stroke
 			(width 0)
@@ -6126,7 +6126,7 @@
 	)
 	(symbol
 		(lib_id "Device:C")
-		(at 138.43 198.12 0)
+		(at 138.43 201.93 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6134,7 +6134,7 @@
 		(dnp no)
 		(uuid "e7f56ed2-9584-48a7-9a77-efd1eb879b85")
 		(property "Reference" "C31"
-			(at 139.954 203.962 0)
+			(at 139.954 207.772 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6143,7 +6143,7 @@
 			)
 		)
 		(property "Value" "150pF"
-			(at 138.938 201.676 0)
+			(at 138.938 205.486 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6152,7 +6152,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder"
-			(at 139.3952 201.93 0)
+			(at 139.3952 205.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6161,7 +6161,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 138.43 198.12 0)
+			(at 138.43 201.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6170,7 +6170,7 @@
 			)
 		)
 		(property "Description" "Unpolarized capacitor"
-			(at 138.43 198.12 0)
+			(at 138.43 201.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)

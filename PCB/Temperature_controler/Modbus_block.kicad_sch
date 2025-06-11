@@ -2479,7 +2479,7 @@
 			)
 		)
 	)
-	(global_label "RS485_Tx"
+	(global_label "RS485_TX"
 		(shape input)
 		(at 166.37 125.73 0)
 		(fields_autoplaced yes)
@@ -2491,7 +2491,7 @@
 		)
 		(uuid "ebf134b7-d8e8-420c-97d5-202ef45b88f8")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 178.4265 125.73 0)
+			(at 178.6079 125.73 0)
 			(effects
 				(font
 					(size 1.27 1.27)

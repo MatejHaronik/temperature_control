@@ -58,13 +58,7 @@
           "width": 0.0
         }
       ],
-      "drc_exclusions": [
-        "clearance|106675000|63500000|ff2c7772-8de9-4e61-8687-56cdc038b3f7|c02e2e81-7397-4bbb-a1b2-ec289f3526e1",
-        "clearance|106675000|64150000|c8ab9469-7684-40ba-8027-badf29d17653|ff2c7772-8de9-4e61-8687-56cdc038b3f7",
-        "clearance|106675000|65450000|86058d0d-e1b1-444d-8f1a-e9e2c088b76a|9dfc1303-c316-45c6-9844-364308a859e8",
-        "clearance|106675000|66750000|6178b3bf-2731-4641-98be-702315738c61|5984dbd6-6c15-44cb-91cc-9ca456a14cec",
-        "clearance|106675000|68050000|876f4579-f5d0-4a5c-b1db-db4efffa6209|d749522b-30f0-4fcf-b5ec-0021c3ae129c"
-      ],
+      "drc_exclusions": [],
       "meta": {
         "version": 2
       },
@@ -133,7 +127,7 @@
         "min_silk_clearance": 0.0,
         "min_text_height": 1.0,
         "min_text_thickness": 0.153,
-        "min_through_hole_diameter": 0.3,
+        "min_through_hole_diameter": 0.15,
         "min_track_width": 0.16,
         "min_via_annular_width": 0.15,
         "min_via_diameter": 0.5,
@@ -497,7 +491,7 @@
       "plot": "../../../../../../Praca/Projects/temperature_control/qotation/",
       "pos_files": "",
       "specctra_dsn": "",
-      "step": "",
+      "step": "../../../../../../Praca/Projects/temperature_control/Temperature_controler.step",
       "svg": "",
       "vrml": ""
     },
