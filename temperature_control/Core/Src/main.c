@@ -51,15 +51,29 @@ UART_HandleTypeDef huart2;
 osThreadId_t Modbus_taskHandle;
 const osThreadAttr_t Modbus_task_attributes = {
   .name = "Modbus_task",
-  .priority = (osPriority_t) osPriorityAboveNormal,
+  .priority = (osPriority_t) osPriorityHigh,
   .stack_size = 128 * 4
 };
-/* Definitions for Temperature_tas */
-osThreadId_t Temperature_tasHandle;
-const osThreadAttr_t Temperature_tas_attributes = {
-  .name = "Temperature_tas",
+/* Definitions for Temperatur_task */
+osThreadId_t Temperatur_taskHandle;
+const osThreadAttr_t Temperatur_task_attributes = {
+  .name = "Temperatur_task",
   .priority = (osPriority_t) osPriorityLow,
   .stack_size = 128 * 4
+};
+/* Definitions for Control_task */
+osThreadId_t Control_taskHandle;
+const osThreadAttr_t Control_task_attributes = {
+  .name = "Control_task",
+  .priority = (osPriority_t) osPriorityBelowNormal,
+  .stack_size = 64 * 4
+};
+/* Definitions for UI_Task */
+osThreadId_t UI_TaskHandle;
+const osThreadAttr_t UI_Task_attributes = {
+  .name = "UI_Task",
+  .priority = (osPriority_t) osPriorityLow,
+  .stack_size = 64 * 4
 };
 /* USER CODE BEGIN PV */
 MAX31865_t SENSOR1;
@@ -87,6 +101,8 @@ static void MX_SPI1_Init(void);
 static void MX_USART1_UART_Init(void);
 void Modbus_task_handle(void *argument);
 void Temperature_task_handle(void *argument);
+void Regulation_task_handle(void *argument);
+void UI_Task_Handle(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -133,13 +149,6 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
 
-                                                                                                                                                                                                                                                                                                                                                                    SENSOR1.cs_gpio_port = GPIOA;
-  SENSOR1.cs_pin = GPIO_PIN_4;
-  SENSOR1.spi = &hspi1;
-
-
-
-  Init_MAX31865(&SENSOR1);
 
   //Modbus Slave initialization
 
@@ -183,8 +192,14 @@ int main(void)
   /* creation of Modbus_task */
   Modbus_taskHandle = osThreadNew(Modbus_task_handle, NULL, &Modbus_task_attributes);
 
-  /* creation of Temperature_tas */
-  Temperature_tasHandle = osThreadNew(Temperature_task_handle, NULL, &Temperature_tas_attributes);
+  /* creation of Temperatur_task */
+  Temperatur_taskHandle = osThreadNew(Temperature_task_handle, NULL, &Temperatur_task_attributes);
+
+  /* creation of Control_task */
+  Control_taskHandle = osThreadNew(Regulation_task_handle, NULL, &Control_task_attributes);
+
+  /* creation of UI_Task */
+  UI_TaskHandle = osThreadNew(UI_Task_Handle, NULL, &UI_Task_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -471,7 +486,7 @@ void Temperature_task_handle(void *argument)
   /* Infinite loop */
   for(;;)
   {
-	temp_data = Read_temperature(&SENSOR1);
+	temp_data = MAX31865_read_temperature(&SENSOR1);
 	memcpy(&temp_int, &temp_data, sizeof(temp_data));
 	ModbusDATA[0] = temp_int & 0xFFFF;
 	ModbusDATA[1]  = (temp_int >> 16) & 0xFFFF;  // High word
@@ -479,6 +494,42 @@ void Temperature_task_handle(void *argument)
     osDelay(1);
   }
   /* USER CODE END Temperature_task_handle */
+}
+
+/* USER CODE BEGIN Header_Regulation_task_handle */
+/**
+* @brief Function implementing the Control_task thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_Regulation_task_handle */
+void Regulation_task_handle(void *argument)
+{
+  /* USER CODE BEGIN Regulation_task_handle */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END Regulation_task_handle */
+}
+
+/* USER CODE BEGIN Header_UI_Task_Handle */
+/**
+* @brief Function implementing the UI_Task thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_UI_Task_Handle */
+void UI_Task_Handle(void *argument)
+{
+  /* USER CODE BEGIN UI_Task_Handle */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END UI_Task_Handle */
 }
 
 /**

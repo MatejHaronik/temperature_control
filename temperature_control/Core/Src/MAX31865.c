@@ -4,127 +4,211 @@
  *  Created on: May 2, 2025
  *      Author: mtjha
  */
+#include "sensor_interface.h"
 #include "MAX31865.h"
 #include <math.h>
-/*MAX31865 Registers*/
-
-#define CONFIG_REG			0x00
-#define RTD_MSB_REG			0x01
-#define RTD_LSB_REG			0x02
-#define HFT_MSB_REG			0x03
-#define HFT_LSB_REG			0x04
-#define LFT_MSB_REG			0x05
-#define LFT_LSB_REG			0x06
-#define FAULT_REG			0x07
-
-/*MAX31865 CONFIG_REG bits*/
-
-#define VBIAS_BIT_D7			0x80
-#define CONV_MODE_BIT_D6		0x40
-#define ONESHOT_BIT_D5			0x20
-#define	WIRE_BIT_D4				0x10
-#define FAULT_CONTROL_D3		0x08
-#define FAULT_CONTROL_D2		0x04
-#define CLEAR_FAULT_D1			0x02
-#define FREQUENCY_D0			0x01
-
-#define CLEAR_FAULT				1
-
-/*MAX31865 Registers objects*/
-
-MAX31865_Register_t cfg_reg = {.start_register = 0x00, .connected_registers = 1};
-MAX31865_Register_t rtd_reg = {.start_register = 0x01, .connected_registers = 2};
-MAX31865_Register_t hft_reg = {.start_register = 0x03, .connected_registers = 2};
-MAX31865_Register_t lft_reg = {.start_register = 0x04, .connected_registers = 2};
-MAX31865_Register_t flt_reg = {.start_register = 0x07, .connected_registers = 1};
+#include <string.h>
+#include <stdio.h>
 
 
 
-uint16_t Read_register(MAX31865_t *max31865, MAX31865_Register_t *reg){
+HAL_StatusTypeDef MAX31865_read_register(MAX31865_t *self, uint8_t register_address, uint8_t register_bytes){
 
 	uint8_t recieved_data_buffer[2] = {0};
-	uint8_t tmp = 0xFF;
-	uint8_t register_adress = reg->start_register;
-	register_adress &= 0x7F;
+	uint8_t dummy_byte = 0xFF;
+	register_address &= 0x7F;
 
-	HAL_GPIO_WritePin(max31865->cs_gpio_port, max31865->cs_pin, GPIO_PIN_RESET);
-	HAL_SPI_Transmit(max31865->spi, &register_adress, 1, 100);
+	HAL_GPIO_WritePin(self->cs_gpio_port, self->cs_pin, GPIO_PIN_RESET);
+	HAL_SPI_Transmit(self->spi, &register_address, 1, HAL_MAX_DELAY);
 
-	for(int i = 0; i < reg->connected_registers; i++){
-		HAL_SPI_TransmitReceive(max31865->spi, &tmp, &recieved_data_buffer[i], 1, 100);
+	for(int i = 0; i < register_bytes; i++){
+		HAL_SPI_TransmitReceive(self->spi, &dummy_byte, &recieved_data_buffer[i], 1, HAL_MAX_DELAY);
 	}
 
-	HAL_GPIO_WritePin(max31865->cs_gpio_port, max31865->cs_pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(self->cs_gpio_port, self->cs_pin, GPIO_PIN_SET);
 
 	return ((uint16_t)recieved_data_buffer[0] << 8) | recieved_data_buffer[1];
 
 }
 
-void Write_register(MAX31865_t *max31865, MAX31865_Register_t *reg, uint8_t *data){
+HAL_StatusTypeDef MAX31865_write_register(MAX31865_t *self, uint8_t register_address, uint8_t *data){
 
-	uint8_t register_adress = reg->start_register;
+	HAL_GPIO_WritePin(self->cs_gpio_port, self->cs_pin, GPIO_PIN_RESET);
+	register_address |= 0x80;
+	HAL_SPI_Transmit(self->spi, &register_address, 1, 100);
+	HAL_SPI_Transmit(self->spi, data, 1, 100);
+
+	if (register_address == (CONFIG_REG | 0x80)){
+		self->cached_config_register = *data ;
+	}
+
+	HAL_GPIO_WritePin(self->cs_gpio_port, self->cs_pin, GPIO_PIN_SET);
+}
 
 
-	HAL_GPIO_WritePin(max31865->cs_gpio_port, max31865->cs_pin, GPIO_PIN_RESET);
-	register_adress |= 0x80;
-	HAL_SPI_Transmit(max31865->spi, &register_adress, 1, 100);
-	HAL_SPI_Transmit(max31865->spi, data, 1, 100);
-	HAL_GPIO_WritePin(max31865->cs_gpio_port, max31865->cs_pin, GPIO_PIN_SET);
+void MAX31865_cfg_apply(MAX31865_t *self,uint8_t bit_mask, uint8_t bit_value){
 
+	uint8_t current_config = self->cached_config_register;
+
+	current_config = (current_config & ~bit_mask) | (bit_value & bit_mask);
+
+	MAX31865_write_register(self, CONFIG_REG, &current_config);
+
+}
+
+void MAX31865_cfg_vbias(MAX31865_t *self, uint8_t state){
+
+	uint8_t current_cached_config = self->cached_config_register;
+
+	uint8_t current_vbias = current_cached_config & MAX31865_CFG_VBIAS_MASK;
+
+	if (current_vbias == state) {
+		printf("Already set");
+	}
+	else{
+
+		MAX31865_cfg_apply(self,MAX31865_CFG_VBIAS_MASK,state);
+	}
+}
+
+void MAX31865_cfg_conversion_mode(MAX31865_t *self, uint8_t state){
+
+	uint8_t current_cached_config = self->cached_config_register;
+
+	uint8_t current_conv_md = current_cached_config & MAX31865_CFG_CONVMODE_MASK;
+
+	if (current_conv_md == state) {
+		printf("Already set");
+	}
+	else{
+
+		MAX31865_cfg_apply(self,MAX31865_CFG_CONVMODE_MASK,state);
+	}
+}
+
+void MAX31865_cfg_rtd_type(MAX31865_t *self, uint8_t state){
+
+	uint8_t current_cached_config = self->cached_config_register;
+
+	uint8_t current_rtd = current_cached_config & MAX31865_CFG_WIRE_MASK;
+
+	if (current_rtd == state) {
+		printf("Already set");
+	}
+	else{
+
+		MAX31865_cfg_apply(self,MAX31865_CFG_WIRE_MASK,state);
+	}
+}
+
+void MAX31865_cfg_fault_detection(MAX31865_t *self, uint8_t state){
+
+	uint8_t current_cached_config = self->cached_config_register;
+
+	uint8_t current_fault_md = current_cached_config & MAX31865_CFG_FAULT_DETECT_MASK;
+
+	if (current_fault_md == state) {
+		printf("Already set");
+	}
+	else{
+
+		MAX31865_cfg_apply(self,MAX31865_CFG_FAULT_DETECT_MASK,state);
+	}
+}
+
+void MAX31865_cfg_filter(MAX31865_t *self, uint8_t state){
+
+	uint8_t current_cached_config = self->cached_config_register;
+
+	uint8_t current_filter = current_cached_config & MAX31865_CFG_FILTER_MASK;
+
+	if (current_filter == state) {
+		printf("Already set");
+	}
+	else{
+
+		MAX31865_cfg_apply(self,MAX31865_CFG_FILTER_MASK,state);
+	}
 
 }
 
 
-void Init_MAX31865(MAX31865_t *max31865){
+void MAX31865_start_one_shot(MAX31865_t *self){
 
-	HAL_GPIO_WritePin(max31865->cs_gpio_port, max31865->cs_pin, GPIO_PIN_SET);
-	uint16_t reg = 0;
-	/*HAL_Delay(1000);*/
-	uint8_t config_byte = 	(VBIAS_ON << 7) |				/*D7 - MSB*/
-            				(CONVERSION_MODE << 6) |		/*D6*/
-							(ONE_SHOT << 5) |				/*D5*/
-							(THREE_WIRE << 4) |				/*D4*/
-							(FAULT_DETECT_1 << 3) |			/*D3*/
-							(FAULT_DETECT_0 << 2) |			/*D2*/
-							(FAULT_CLEAR << 1) |			/*D1*/
-							(FILTER_TYPE);
+	MAX31865_cfg_apply(self,MAX31865_CFG_VBIAS_MASK,MAX31865_CFG_VBIAS_ON);
 
-	Write_register(max31865,&cfg_reg,&config_byte);
-	//HAL_Delay(10);
-	reg = Read_register(max31865,&cfg_reg);
+	osDelay(5);
+
+	MAX31865_cfg_apply(self,MAX31865_CFG_CONVMODE_MASK,MAX31865_CFG_CONVMODE_N_OFF);
+
+	MAX31865_cfg_apply(self,MAX31865_CFG_ONESHOT_MASK,MAX31865_CFG_ONESHOT_ENABLE);
 
 }
 
-void Clear_fault(MAX31865_t *max31865){
 
-	HAL_GPIO_WritePin(max31865->cs_gpio_port, max31865->cs_pin, GPIO_PIN_SET);
-	uint16_t reg = 0;
-	//HAL_Delay(10);
-	uint8_t config_byte = 	(VBIAS_ON << 7) |				/*D7 - MSB*/
-            				(CONVERSION_MODE << 6) |		/*D6*/
-							(ONE_SHOT << 5) |				/*D5*/
-							(THREE_WIRE << 4) |				/*D4*/
-							(FAULT_DETECT_1 << 3) |			/*D3*/
-							(FAULT_DETECT_1 << 2) |			/*D2*/
-							(CLEAR_FAULT << 1) |			/*D1*/
-							(FILTER_TYPE);
-
-	Write_register(max31865,&cfg_reg,&config_byte);
-	//HAL_Delay(10);
-	reg = Read_register(max31865,&cfg_reg);
+void MAX31865_config_hft(MAX31865_t *self){
 
 }
 
-float Read_temperature(MAX31865_t *max31865){
-/**
- * call read register and store data to value
+void MAX31865_config_lft(MAX31865_t *self){
 
- *
-**/
+}
 
 
-	Clear_fault(max31865);
-	//HAL_Delay(10);
+void MAX31865_clear_fault(MAX31865_t *self){
+
+	HAL_GPIO_WritePin(self->cs_gpio_port, self->cs_pin, GPIO_PIN_SET);
+
+	uint8_t current_config = (uint8_t)MAX31865_read_register(self, CONFIG_REG, 1);
+
+	uint8_t config_with_clear_strobe = current_config | MAX31865_CFG_FAULT_CLEAR_YES;
+	MAX31865_write_register(self, CONFIG_REG, &config_with_clear_strobe);
+
+	uint8_t config_without_clear_strobe = current_config & (~MAX31865_CFG_FAULT_CLEAR_MASK);
+	MAX31865_write_register(self, CONFIG_REG, &config_without_clear_strobe);
+
+}
+
+HAL_StatusTypeDef MAX31865_init(MAX31865_t *self, GPIO_TypeDef *cs_gpio_port,uint16_t cs_pin,SPI_HandleTypeDef *spi){
+
+    if (self == NULL || cs_gpio_port == NULL || spi == NULL) {
+        printf("MAX31865: Init failed - Invalid NULL pointers.\n");
+        return HAL_ERROR; // Return an error if essential pointers are NULL
+    }
+
+	memset(self,0,sizeof(*self));
+
+	self->cs_gpio_port = cs_gpio_port ;
+	self->cs_pin = cs_pin ;
+	self->spi = spi ;
+
+	uint8_t default_config = 	(MAX31865_CFG_VBIAS_ON) |
+								(MAX31865_CFG_CONVMODE_AUTO) |
+								(MAX31865_CFG_ONESHOT_OFF) |
+								(MAX31865_CFG_WIRE_3 ) |
+								(MAX31865_CFG_FAULT_RUN_AUTO) |
+								(MAX31865_CFG_FILTER_50HZ);
+
+
+	HAL_GPIO_WritePin(self->cs_gpio_port, self->cs_pin, GPIO_PIN_SET);
+
+
+	HAL_StatusTypeDef write_status = MAX31865_write_register(self, CONFIG_REG, &default_config);
+
+    if (write_status != HAL_OK) {
+        printf("MAX31865: Init failed to write config register.\n");
+        return write_status; // Return the specific error from write_register
+    }
+
+    printf("MAX31865: Initialized successfully.\n");
+    return HAL_OK; // Indicate overall success
+
+}
+
+
+float MAX31865_read_temperature(MAX31865_t *self){
+
+	MAX31865_clear_fault(self);
 
 	uint16_t adc_rtd_data = 0 ;
 	float r_ref = 428.0f ;
@@ -133,13 +217,17 @@ float Read_temperature(MAX31865_t *max31865){
 	const float a = 0.00390830f;
 	const float b = -0.0000005775f;
 
-	adc_rtd_data = Read_register(max31865, &rtd_reg) >> 1;
+	adc_rtd_data = MAX31865_read_register(self, RTD_REG, 2) >> 1;
 
 	rtd = (adc_rtd_data * r_ref) / (1<<15);
 
 	float temperature = (-a + (sqrt((a*a)-(4*b)*(1-(rtd / r_t))))) / (2*b);
 
 	return temperature;
+
+}
+
+void MAX31865_read_fault(MAX31865_t *self){
 
 }
 
